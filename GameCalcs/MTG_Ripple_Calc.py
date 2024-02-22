@@ -1,6 +1,7 @@
 import sys
 import random
 import time
+from prettytable import PrettyTable
 from os import system, name
 
 def clear():
@@ -15,7 +16,7 @@ decksToSimulate = 10000
 cardsPerDeck = 100
 cardsDrawnAtStart = 15
 correctCardsPerDeckMin = 25
-correctCardsPerDeckMax = 40
+correctCardsPerDeckMax = 50
 
 # ----------------------------------------------------------------------------------
 
@@ -45,8 +46,10 @@ for hitsInDeck in range(correctCardsPerDeckMin, correctCardsPerDeckMax + 1):
 		pool.extend([True] * hitsInDeck)
 		pool.extend([False] * (cardsPerDeck - hitsInDeck))
 		random.shuffle(pool)
-		#for _ in range(cardsDrawnAtStart):
-		#	pool.pop(0)
+		drawnCount = 0
+		for _ in range(cardsDrawnAtStart):
+			if pool.pop(0) == True:
+				drawnCount += 1
 
 		stackCount = 1
 		thisDeckCasts = 0
@@ -68,7 +71,7 @@ for hitsInDeck in range(correctCardsPerDeckMin, correctCardsPerDeckMax + 1):
 			stackCount -= 1
 
 			# If we've cast everything in the deck, empty stack
-			if thisDeckCasts >= hitsInDeck - 1:
+			if thisDeckCasts >= (hitsInDeck - drawnCount) - 1:
 				stackCount = 0
 				runouts += 1
 
@@ -76,10 +79,6 @@ for hitsInDeck in range(correctCardsPerDeckMin, correctCardsPerDeckMax + 1):
 			#time.sleep(0.1)
 	
 	results.append(Result(hitsInDeck, totalCasts, decksToSimulate, runouts))
-
-
-
-
 
 
 clear()
@@ -91,8 +90,15 @@ print(f"Hits in deck start             : {correctCardsPerDeckMin}")
 print(f"Hits in deck end               : {correctCardsPerDeckMax}")
 space()
 
+table = PrettyTable()
+table.field_names = ["Cards in deck", "Average casts", "Chance to cast everything"]
+
+for field_name in table.field_names:
+    table.align[field_name] = "l"
+
 for result in results:
-	print(f"--- {result.hitsInDeck} of same card in deck ---")
-	print(f"Average casts              : {result.averageCasts()}")
-	print(f"Chance to cast everything  : {(result.runouts / result.totalDecks) * 100}%")
-	space()
+	table.add_row([f"{result.hitsInDeck}", 
+				   f"{round(result.averageCasts(), 2)}", 
+				   f"{round((result.runouts / result.totalDecks) * 100, 2)}%"])
+
+print(table)
