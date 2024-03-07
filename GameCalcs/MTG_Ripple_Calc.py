@@ -1,11 +1,9 @@
-import sys
 import random
 import time
 from prettytable import PrettyTable
 from os import system, name
 from dataclasses import dataclass
 from multiprocessing import Pool
-from multiprocessing.dummy import Pool as ThreadPool
 
 def clear():
 	_ = system('cls') if name == 'nt' else system('clear')
@@ -25,6 +23,9 @@ correctCardsPerDeckMax = 50
 
 @dataclass
 class Result:
+	"""
+	Contains the result for the simulation of a single deck
+	"""
 	hitsInDeck: int
 	totalCasts: int
 	totalDecks: int
@@ -41,40 +42,55 @@ def main():
 
 	results = []
 	amounts = range(correctCardsPerDeckMin, correctCardsPerDeckMax + 1)
+
+	# Create a multiprocessing pool to simulate the decks
 	with Pool() as pool:
-		results = pool.imap(simulate_deck, amounts)
+		# Run the simulations with the pool
+		results = pool.map(simulate_deck, amounts)
 
-
+		# Create a pretty table to display the results
 		table = PrettyTable()
 		table.field_names = ["Cards in deck", "Average casts", "Chance to cast everything"]
 
+		# Set left alignment for all fields
 		for field_name in table.field_names:
 			table.align[field_name] = "l"
 
+		# Add the results to the table
 		for result in results:
 			table.add_row([f"{result.hitsInDeck}", 
 						f"{round(result.averageCasts(), 2)}", 
 						f"{round((result.runouts / result.totalDecks) * 100, 2)}%"])
 
-		clear()
-		print(f"Simulation time                : {round(time.perf_counter() - start, 2)} seconds")
-		print(f"Total decks                    : {decksToSimulate}")
-		print(f"Deck size                      : {cardsPerDeck}")
-		print(f"Cards drawn at start           : {cardsDrawnAtStart}")
-		print(f"Hits in deck start             : {correctCardsPerDeckMin}")
-		print(f"Hits in deck end               : {correctCardsPerDeckMax}")
-		space()
+	# Clear the console and print the simulation statistics
+	clear()
+	print(f"Simulation time                : {round(time.perf_counter() - start, 2)} seconds")
+	print(f"Total decks                    : {decksToSimulate}")
+	print(f"Deck size                      : {cardsPerDeck}")
+	print(f"Cards drawn at start           : {cardsDrawnAtStart}")
+	print(f"Hits in deck start             : {correctCardsPerDeckMin}")
+	print(f"Hits in deck end               : {correctCardsPerDeckMax}")
+	space()
 
-		print(table)
+	# Print the results table
+	print(table)
 
 # ----------------------------------------------------------------------------------
 	
 
 
 def simulate_deck(hitsInDeck: int) -> Result:
+	"""
+	Simulates a deck with a given number of hits in it, and returns the result of the simulation.
+
+	Args:
+		hitsInDeck (int): The number of hits in the deck
+	Returns:
+		Result: The result of the simulation
+	"""
 	totalCasts = 0
 	runouts = 0
-	for deckIndex in range(decksToSimulate):
+	for _ in range(decksToSimulate):
 		pool = []
 		pool.extend([True] * hitsInDeck)
 		pool.extend([False] * (cardsPerDeck - hitsInDeck))
@@ -107,10 +123,8 @@ def simulate_deck(hitsInDeck: int) -> Result:
 			if thisDeckCasts >= (hitsInDeck - drawnCount) - 1:
 				stackCount = 0
 				runouts += 1
-
-			#print(f"Deck {deckIndex + 1}, hits in deck: {hitsInDeck}, hits in this deck: {thisDeckCasts}, stackCount {stackCount}, deck size: {len(pool)}")
-			#time.sleep(0.1)
 	
+	# Return the result of the simulation
 	return Result(hitsInDeck, totalCasts, decksToSimulate, runouts)
 
 
