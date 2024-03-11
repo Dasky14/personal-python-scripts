@@ -79,14 +79,12 @@ def main():
 
     # Clear the console and print the simulation statistics
     clear()
-    print(
-        f"Simulation time                : {round(time.perf_counter() - start, 2)} seconds"
-    )
-    print(f"Total decks                    : {decksToSimulate}")
-    print(f"Deck size                      : {cardsPerDeck}")
-    print(f"Cards drawn at start           : {cardsDrawnAtStart}")
-    print(f"Hits in deck start             : {correctCardsPerDeckMin}")
-    print(f"Hits in deck end               : {correctCardsPerDeckMax}")
+    print(f"{"Simulation time":<30}: {round(time.perf_counter() - start, 2)} seconds")
+    print(f"{"Total decks":<30}: {decksToSimulate}")
+    print(f"{"Deck size":<30}: {cardsPerDeck}")
+    print(f"{"Cards drawn at start":<30}: {cardsDrawnAtStart}")
+    print(f"{"Hits in deck start":<30}: {correctCardsPerDeckMin}")
+    print(f"{"Hits in deck end":<30}: {correctCardsPerDeckMax}")
     space()
 
     # Print the results table
